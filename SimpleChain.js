@@ -17,11 +17,11 @@ class Block {
 |  Class with a constructor for blockchain data model  |
 |  with functions to support:                          |
 |     - createGenesisBlock()                           |
-|     - getLatestBlock()                               |
+|     - TODO: getLatestBlock()                         |
 |     - addBlock()                                     |
-|     - getBlock()                                     |
-|     - validateBlock()                                |
-|     - validateChain()                                |
+|     - TODO: getBlock()                               |
+|     - TODO: validateBlock()                          |
+|     - TODO: validateChain()                          |
 |  ====================================================*/
 
 class Blockchain{
