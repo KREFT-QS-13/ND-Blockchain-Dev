@@ -35,18 +35,27 @@ const App = {
     const { createStar } = this.meta.methods;
     const name = document.getElementById("starName").value;
     const id = document.getElementById("starId").value;
-    await createStar(name, id).send({from: this.account});
-    App.setStatus("New Star Owner is " + this.account + ".");
+    
+    try {
+      await createStar(name, id).send({from: this.account});
+      App.setStatus("New Star Owner is " + this.account + ".");
+    } catch(err) {
+      App.setStatus("Error: Invalid inputs. The ID of the star might be already taken. ");
+    }
   },
 
   // Implement Task 4 Modify the front end of the DAPP
   lookUp: async function (){
-    // const { lookUp } = this.meta.methods;
-    // const id = document.getElementById("lookid").value;
-
-    // var star = await lookUp(id).send({from: this.account});
-
-    // App.setStatus("Star with the id " + id + " is " + star +".");
+    const { lookUptokenIdToStarInfo } = this.meta.methods;
+    const id = document.getElementById("lookid").value;
+    
+    const star = await lookUptokenIdToStarInfo(id).call();
+    
+    if (star !== "") {
+      App.setStatus("Star with the id " + id + " is " + star +".");
+    } else {
+      App.setStatus("There is no Star with the id " + id + ".");
+    }
   }
 
 };
