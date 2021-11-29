@@ -35,12 +35,13 @@ const App = {
     const { createStar } = this.meta.methods;
     const name = document.getElementById("starName").value;
     const id = document.getElementById("starId").value;
-    
+
     try {
       await createStar(name, id).send({from: this.account});
       App.setStatus("New Star Owner is " + this.account + ".");
     } catch(err) {
       App.setStatus("Error: Invalid inputs. The ID of the star might be already taken. ");
+      console.log(err);
     }
   },
 
