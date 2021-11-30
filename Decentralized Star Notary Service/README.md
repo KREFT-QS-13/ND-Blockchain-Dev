@@ -3,9 +3,13 @@ This folder contains my submission for the second projet in Udacity's Blockchain
 
 # Versions of tools 
 Truffle v5.4.22 (core: 5.4.22)
+
 Solidity v0.5.16 (solc-js)
+
 Node v16.13.0
+
 Web3.js v1.5.3
+
 Openzeppelin-solidity ^4.4.0
 
 # Project's details
