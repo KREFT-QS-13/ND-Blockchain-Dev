@@ -14,6 +14,7 @@ Openzeppelin-solidity ^4.4.0
 
 # Project's details
 Token name : Astro
+
 Token symbol : AST
 
 Token address on Rinkeby Network: 0xD5D891de28CdE8561Bf3980D3f92F97ed7001bE3
