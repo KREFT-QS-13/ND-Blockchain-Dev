@@ -96,43 +96,43 @@ contract SupplyChain {
 
   // Define a modifier that checks if an item.state of a upc is Processed
   modifier processed(uint _upc) {
-
+    require(items[_upc].itemState == State.Processed);
     _;
   }
   
   // Define a modifier that checks if an item.state of a upc is Packed
   modifier packed(uint _upc) {
-
+    require(items[_ups].itemState == State.Packed);
     _;
   }
 
   // Define a modifier that checks if an item.state of a upc is ForSale
   modifier forSale(uint _upc) {
-
+    require(items[_upc].itemState == State.ForSale);
     _;
   }
 
   // Define a modifier that checks if an item.state of a upc is Sold
   modifier sold(uint _upc) {
-
+    require(items[_upc].itemState == State.Sold);
     _;
   }
   
   // Define a modifier that checks if an item.state of a upc is Shipped
   modifier shipped(uint _upc) {
-
+    require(items[_upc].itemState == State.Shipped);
     _;
   }
 
   // Define a modifier that checks if an item.state of a upc is Received
   modifier received(uint _upc) {
-
+    require(items[_upc].itemState == State.Received);
     _;
   }
 
   // Define a modifier that checks if an item.state of a upc is Purchased
   modifier purchased(uint _upc) {
-    
+    require(items[_upc].itemState == State.Purchased);
     _;
   }
 
@@ -156,93 +156,90 @@ contract SupplyChain {
   function harvestItem(uint _upc, address _originFarmerID, string _originFarmName, string _originFarmInformation, string  _originFarmLatitude, string  _originFarmLongitude, string  _productNotes) public 
   {
     // Add the new item as part of Harvest
-    
+    // Should be here more inputs to fullfill all elements of Struct
+    items[_upc].push(Item(sku, _upc, _originFarmerID,  _originFarmerID, _originFarmName, _originFarmInformation, _originFarmLatitude, _originFarmLongitude, sku+_upc, _productNotes, 0, State.Harvested));
     // Increment sku
     sku = sku + 1;
     // Emit the appropriate event
-    
+    emit Harvested(_upc);
   }
 
   // Define a function 'processtItem' that allows a farmer to mark an item 'Processed'
-  function processItem(uint _upc) public 
+  
   // Call modifier to check if upc has passed previous supply chain stage
-  
   // Call modifier to verify caller of this function
-  
+  function processItem(uint _upc) public harvested(_upc), verifyCaller(msg.sender)
   {
     // Update the appropriate fields
-    
+    items[_upc].itemState = State.Processed;
     // Emit the appropriate event
-    
+    emit Processed(_upc);
   }
 
   // Define a function 'packItem' that allows a farmer to mark an item 'Packed'
-  function packItem(uint _upc) public 
+  
   // Call modifier to check if upc has passed previous supply chain stage
-  
   // Call modifier to verify caller of this function
-  
+  function packItem(uint _upc) public processed(_upc), verifyCaller(msg.sender)
   {
     // Update the appropriate fields
-    
+    items[_upc].itemState = State.Packed;
     // Emit the appropriate event
-    
+    emit Packed(_upc);
   }
 
   // Define a function 'sellItem' that allows a farmer to mark an item 'ForSale'
-  function sellItem(uint _upc, uint _price) public 
+  
   // Call modifier to check if upc has passed previous supply chain stage
-  
   // Call modifier to verify caller of this function
-  
+  function sellItem(uint _upc, uint _price) public packed(_upc), verifyCaller(msg.sender)
   {
     // Update the appropriate fields
-    
+    items[_upc].itemState = State.ForSale;
     // Emit the appropriate event
-    
+    emit ForSale(_upc);
   }
 
   // Define a function 'buyItem' that allows the disributor to mark an item 'Sold'
   // Use the above defined modifiers to check if the item is available for sale, if the buyer has paid enough, 
   // and any excess ether sent is refunded back to the buyer
-  function buyItem(uint _upc) public payable 
-    // Call modifier to check if upc has passed previous supply chain stage
     
-    // Call modifer to check if buyer has paid enough
+  // [!] Call modifier to check if upc has passed previous supply chain stage
+  // [!] Call modifer to check if buyer has paid enough
+  // [!] Call modifer to send any excess ether back to buyer
     
-    // Call modifer to send any excess ether back to buyer
-    
-    {
-    
+  function buyItem(uint _upc) public payable forSale(_upc), paidEnough(msg.value), checkValue(_upc)
+  {
     // Update the appropriate fields - ownerID, distributorID, itemState
-    
+    items[_upc].ownerID = msg.sender;
+    items[_upc].distributorID = msg.sender;
+    items[_upc].itemState = State.Sold;
     // Transfer money to farmer
-    
+    items[_upc].originFarmerID.transfer(items[_upc].productPrice);
     // emit the appropriate event
-    
+    emit Sold(_upc);
   }
 
   // Define a function 'shipItem' that allows the distributor to mark an item 'Shipped'
   // Use the above modifers to check if the item is sold
-  function shipItem(uint _upc) public 
-    // Call modifier to check if upc has passed previous supply chain stage
     
-    // Call modifier to verify caller of this function
-    
-    {
+  // Call modifier to check if upc has passed previous supply chain stage
+  // Call modifier to verify caller of this function
+  function shipItem(uint _upc) public sold(_upc), verifyCaller(msg.sender)
+  {
     // Update the appropriate fields
-    
+    items[_upc].itemState = State.Shipped();
     // Emit the appropriate event
-    
+    emit shipped(_upc);
   }
 
   // Define a function 'receiveItem' that allows the retailer to mark an item 'Received'
   // Use the above modifiers to check if the item is shipped
-  function receiveItem(uint _upc) public 
-    // Call modifier to check if upc has passed previous supply chain stage
     
-    // Access Control List enforced by calling Smart Contract / DApp
-    {
+  // Call modifier to check if upc has passed previous supply chain stage
+  // Access Control List enforced by calling Smart Contract / DApp
+  function receiveItem(uint _upc) public 
+  {
     // Update the appropriate fields - ownerID, retailerID, itemState
     
     // Emit the appropriate event
