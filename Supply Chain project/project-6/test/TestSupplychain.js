@@ -79,19 +79,22 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        var eventEmitted = false
         
         // Watch the emitted event Processed()
-        
-
-        // Mark an item as Processed by calling function processtItem()
-        
+        var event = SupplyChain.Processed()
+        await event.watch((err, res) => {
+            eventEmitted = true
+        })
+        // Mark an item as Processed by calling function processItem()
+        await supplyChain.processItem(upc)
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo(upc)
 
         // Verify the result set
-        
+        assert.equal(resultBufferTwo[5], 0, "Error: Invalid item State")
+        assert.equal(eventEmitted, true, "Invalid event emitted")
     })    
 
     // 3rd Test
@@ -99,19 +102,22 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        var eventEmitted = false
         
         // Watch the emitted event Packed()
-        
+        await SupplyChain.Packed().watch((err, res) => {
+            eventEmitted = true
+        })
 
         // Mark an item as Packed by calling function packItem()
-        
+        await supplyChain.packItem(upc)
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        
+        const resultBufferTwo = supplyChain.fetchItemBufferTwo(upc)
 
         // Verify the result set
-        
+        assert.equal(resultBufferTwo[5], 1, "Error: Invalid item State")
+        assert.equal(eventEmitted, true, "Invalid event emitted")
     })    
 
     // 4th Test
@@ -119,19 +125,24 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        var eventEmitted = false
         
         // Watch the emitted event ForSale()
-        
+        await SupplyChain.ForSale().watch((err, res) => {
+            eventEmitted = true
+        })
 
         // Mark an item as ForSale by calling function sellItem()
-        
+        await supplyChain.sellItem(upc)
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        const resultBufferTwo = SupplyChain.fetchItemBufferTwo(upc)
         
 
         // Verify the result set
-          
+        assert.equal(resultBufferTwo[5], 2, "Error: Invalid item State")
+        assert.equal(resultBufferTwo[4], productPrice, "Error: Invalid item State")
+        assert.equal(eventEmitted, true, "Invalid event emitted")
     })    
 
     // 5th Test
@@ -139,20 +150,26 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        var eventEmitted = false
         
         // Watch the emitted event Sold()
         var event = supplyChain.Sold()
-        
+        await event.watch((err, res) => {
+            eventEmitted = true
+        })
 
         // Mark an item as Sold by calling function buyItem()
-        
+        await supplyChain.buyItem(upc)
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        
+        const resultBufferOne = SupplyChain.fetchItemBufferOne(upc)
+        const resultBufferTwo = SupplyChain.fetchItemBufferTwo(upc)
 
         // Verify the result set
-        
+        assert.equal(resultBufferOne[2], ownerID, "Error: Missing or invalid ownerID.")
+        assert.equal(resultBufferwo[6], distributorID, "Error: Missing or invalid distributorID.")
+        assert.equal(resultBufferTwo[5], 3, "Error: Invalid item State.")
+        assert.equal(eventEmitted, true, "Invalid event emitted.")
     })    
 
     // 6th Test

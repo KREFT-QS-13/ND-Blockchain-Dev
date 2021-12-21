@@ -188,7 +188,7 @@ contract SupplyChain is Ownable, Roles, FarmerRole, ConsumerRole, DistributorRol
     emit Harvested(_upc);
   }
 
-  // Define a function 'processtItem' that allows a farmer to mark an item 'Processed'
+  // Define a function 'processItem' that allows a farmer to mark an item 'Processed'
   
   // Call modifier to check if upc has passed previous supply chain stage
   // Call modifier to verify caller of this function
