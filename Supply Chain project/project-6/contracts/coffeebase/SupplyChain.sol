@@ -7,7 +7,7 @@ import "../coffeeaccesscontrol/DistributorRole.sol";
 import "../coffeeaccesscontrol/RetailerRole.sol";
 
 // Define a contract 'Supplychain'
-contract SupplyChain is FarmerRole, ConsumerRole, DistributorRole, RetailerRole {
+contract SupplyChain is Ownable, FarmerRole, ConsumerRole, DistributorRole, RetailerRole {
 
   // Define 'owner'
   address owner;
@@ -160,27 +160,30 @@ contract SupplyChain is FarmerRole, ConsumerRole, DistributorRole, RetailerRole 
   }
 
   // Define a function 'harvestItem' that allows a farmer to mark an item 'Harvested'
-  function harvestItem(uint _upc, address _originFarmerID, string _originFarmName, string _originFarmInformation, string  _originFarmLatitude, string  _originFarmLongitude, string  _productNotes) public 
+  function harvestItem(
+    uint _upc,
+    address _originFarmerID,
+    string _originFarmName,
+    string _originFarmInformation,
+    string  _originFarmLatitude,
+    string  _originFarmLongitude,
+    string  _productNotes
+  ) public onlyFarmer() 
   {
     // Add the new item as part of Harvest
-    items[_upc] = Item({ 
-      sku: sku,
-      upc: _upc,
-      ownerID: msg.sender,  
-      originFarmerID: _originFarmerID, 
-      originFarmName: _originFarmName, 
-      originFarmInformation: _originFarmInformation,
-      originFarmLatitude: _originFarmLatitude,
-      originFarmLongitude: _originFarmLongitude,
-      productID: sku+_upc,
-      productNotes: _productNotes,
-      productPrice: uint(0),
-      itemState: State.Harvested,
-      distributorID: address(0),
-      retailerID: address(0),
-      consumerID: address(0)
-    });
-  
+    items[_upc].sku = sku;
+    items[_upc].upc = _upc;
+    items[_upc].ownerID = owner;
+    items[_upc].originFarmerID = _originFarmerID;
+    items[_upc].originFarmName = _originFarmName;
+    items[_upc].originFarmInformation = _originFarmInformation;
+    items[_upc].originFarmLatitude = _originFarmLatitude;
+    items[_upc].originFarmerID = _originFarmerID;
+    items[_upc].originFarmLongitude = _originFarmLongitude;
+    items[_upc].productID = sku+_upc;
+    items[_upc].productNotes = _productNotes;
+    items[_upc].itemState = State.Harvested;
+
     // // Increment sku
     sku = sku + 1;
     // Emit the appropriate event
