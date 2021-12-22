@@ -1,14 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "../coffeecore/Ownable.sol";
-import "../coffeeaccesscontrol/Roles.sol";
 import "../coffeeaccesscontrol/FarmerRole.sol";
 import "../coffeeaccesscontrol/ConsumerRole.sol";
 import "../coffeeaccesscontrol/DistributorRole.sol";
 import "../coffeeaccesscontrol/RetailerRole.sol";
 
 // Define a contract 'Supplychain'
-contract SupplyChain is Ownable, Roles, FarmerRole, ConsumerRole, DistributorRole, RetailerRole {
+contract SupplyChain is FarmerRole, ConsumerRole, DistributorRole, RetailerRole {
 
   // Define 'owner'
   address owner;
@@ -20,11 +19,11 @@ contract SupplyChain is Ownable, Roles, FarmerRole, ConsumerRole, DistributorRol
   uint  sku;
 
   // Define a public mapping 'items' that maps the UPC to an Item.
-  mapping (uint => Item) items;
+  mapping(uint => Item) items;
 
   // Define a public mapping 'itemsHistory' that maps the UPC to an array of TxHash, 
   // that track its journey through the supply chain -- to be sent from DApp.
-  mapping (uint => string[]) itemsHistory;
+  mapping(uint => string[]) itemsHistory;
   
   // Define enum 'State' with the following values:
   enum State 
@@ -37,7 +36,7 @@ contract SupplyChain is Ownable, Roles, FarmerRole, ConsumerRole, DistributorRol
     Shipped,    // 5
     Received,   // 6
     Purchased   // 7
-    }
+  }
 
   State constant defaultState = State.Harvested;
 
@@ -110,7 +109,7 @@ contract SupplyChain is Ownable, Roles, FarmerRole, ConsumerRole, DistributorRol
   
   // Define a modifier that checks if an item.state of a upc is Packed
   modifier packed(uint _upc) {
-    require(items[_ups].itemState == State.Packed);
+    require(items[_upc].itemState == State.Packed);
     _;
   }
 
@@ -164,25 +163,25 @@ contract SupplyChain is Ownable, Roles, FarmerRole, ConsumerRole, DistributorRol
   function harvestItem(uint _upc, address _originFarmerID, string _originFarmName, string _originFarmInformation, string  _originFarmLatitude, string  _originFarmLongitude, string  _productNotes) public 
   {
     // Add the new item as part of Harvest
-    // Me: Should be here more inputs to fullfill all elements of Struct ??
-    items[_upc] = Item({
+    items[_upc] = Item({ 
       sku: sku,
       upc: _upc,
-      ownerID: _originFarmerID, 
-      originFarmerID:_originFarmerID, 
-      originFarmName: _originFarmName,
-      originFarmInformation: _originFarmInformation, 
-      originFarmLatitude: _originFarmLatitude, 
-      originFarmLongitude: _originFarmLongitude, 
-      productId: sku+_upc, 
-      productNotes: _productNotes, 
-      productPrice: uint(0), 
+      ownerID: msg.sender,  
+      originFarmerID: _originFarmerID, 
+      originFarmName: _originFarmName, 
+      originFarmInformation: _originFarmInformation,
+      originFarmLatitude: _originFarmLatitude,
+      originFarmLongitude: _originFarmLongitude,
+      productID: sku+_upc,
+      productNotes: _productNotes,
+      productPrice: uint(0),
       itemState: State.Harvested,
-      distributorID = address(0),
-      retailerID = address(0),
-      consumerID = address(0)
-    ));
-    // Increment sku
+      distributorID: address(0),
+      retailerID: address(0),
+      consumerID: address(0)
+    });
+  
+    // // Increment sku
     sku = sku + 1;
     // Emit the appropriate event
     emit Harvested(_upc);
@@ -253,9 +252,9 @@ contract SupplyChain is Ownable, Roles, FarmerRole, ConsumerRole, DistributorRol
   function shipItem(uint _upc) public onlyDistributor() sold(_upc) verifyCaller(items[_upc].distributorID)
   {
     // Update the appropriate fields
-    items[_upc].itemState = State.Shipped();
+    items[_upc].itemState = State.Shipped;
     // Emit the appropriate event
-    emit shipped(_upc);
+    emit Shipped(_upc);
   }
 
   // Define a function 'receiveItem' that allows the retailer to mark an item 'Received'

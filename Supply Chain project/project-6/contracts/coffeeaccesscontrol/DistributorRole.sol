@@ -5,6 +5,7 @@ import "./Roles.sol";
 
 // Define a contract 'DistributorRole' to manage this role - add, remove, check
 contract DistributorRole {
+  using Roles for Roles.Role;
 
   // Define 2 events, one for Adding, and other for Removing
   event DistributorAdded(address indexed account);
@@ -24,7 +25,7 @@ contract DistributorRole {
 
   // Define a function 'isDistributor' to check this role
   function isDistributor(address account) public view returns (bool) {
-    return distributors.has(msg.sender);
+    return distributors.has(account);
   }
 
   // Define a function 'addDistributor' that adds this role

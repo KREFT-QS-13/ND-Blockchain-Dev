@@ -5,12 +5,13 @@ import "./Roles.sol";
 
 // Define a contract 'ConsumerRole' to manage this role - add, remove, check
 contract ConsumerRole {
+  using Roles for Roles.Role;
 
   // Define 2 events, one for Adding, and other for Removing
   event ConsumerAdded(address indexed account);
   event ConsumerRemoved(address indexed account);
   // Define a struct 'consumers' by inheriting from 'Roles' library, struct Role
-  Roles.Role private constumers;
+  Roles.Role private consumers;
   // In the constructor make the address that deploys this contract the 1st consumer
   constructor() public {
     _addConsumer(msg.sender);
@@ -24,7 +25,7 @@ contract ConsumerRole {
 
   // Define a function 'isConsumer' to check this role
   function isConsumer(address account) public view returns (bool) {
-    return constumers.has(acccount);
+    return consumers.has(account);
   }
 
   // Define a function 'addConsumer' that adds this role
@@ -39,13 +40,13 @@ contract ConsumerRole {
 
   // Define an internal function '_addConsumer' to add this role, called by 'addConsumer'
   function _addConsumer(address account) internal {
-    constumers.add(account);
+    consumers.add(account);
     emit ConsumerAdded(account);
   }
 
   // Define an internal function '_removeConsumer' to remove this role, called by 'removeConsumer'
   function _removeConsumer(address account) internal {
-    constumers.remove(account);
+    consumers.remove(account);
     emit ConsumerRemoved(account);
   }
 }
