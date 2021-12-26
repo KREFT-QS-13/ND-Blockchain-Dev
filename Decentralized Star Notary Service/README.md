@@ -1,5 +1,5 @@
 # Introduction 
-This folder contains my submission for the second projet in Udacity's Blockchain developer nanodegree. The project due to hard time with exact versions of all tools is based on suggested starter code: https://github.com/udacity/nd1309-p2-Decentralized-Star-Notary-Service-Starter-Code/archive/refs/heads/main.zip
+This folder contains my submission for the second project in Udacity's Blockchain developer nanodegree. The project due to hard time with exact versions of all tools is based on suggested starter code: https://github.com/udacity/nd1309-p2-Decentralized-Star-Notary-Service-Starter-Code/archive/refs/heads/main.zip
 
 # Versions of tools 
 Truffle v5.4.22 (core: 5.4.22)
