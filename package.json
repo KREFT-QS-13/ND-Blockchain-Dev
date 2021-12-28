@@ -3,6 +3,7 @@
     "solint": "^0.0.1"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.0"
+    "@openzeppelin/contracts": "^4.4.0",
+    "truffle-hdwallet-provider": "^1.0.17"
   }
 }
