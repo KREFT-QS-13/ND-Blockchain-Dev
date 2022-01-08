@@ -36,6 +36,13 @@ contract FlightSuretyData {
         address airline;
     }
 
+    struct Passenger {
+        address passenger;
+        string flightNumber;
+    }
+
+    Passenger[] Passengers = new Passenger[](0);
+
     mapping(address=>Airline) Airlines;
     mapping(bytes32=>Insurance) Insurees;
     mapping(bytes32=>Flight) Flights;
@@ -153,6 +160,8 @@ contract FlightSuretyData {
 
         // claimamount = 1.5 * amount
         Insurees[key] = Insurance(insuree, flightNumber, amount, amount.add(amount.div(2))); 
+
+        Passengers.push(Passenger(insuree, flightNumber));
 
         fund(amount);
 

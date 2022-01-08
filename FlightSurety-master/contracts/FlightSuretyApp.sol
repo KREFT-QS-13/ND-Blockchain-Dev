@@ -53,6 +53,13 @@ contract FlightSuretyApp {
         address airline;
     }
 
+    struct Passenger {
+        address passenger;
+        string flightNumber;
+    }
+
+    Passenger[] Passengers = new Passenger[](0);
+
     mapping(address=>Airline) Airlines;
     mapping(bytes32=>Insurance) Insurees;
     mapping(bytes32=>Flight) Flights;
@@ -158,18 +165,24 @@ contract FlightSuretyApp {
 
         Flights[key].statusCode = statusCode;
         Flights[key].updatedTimestamp = timestamp;
-    }
 
+        if(Flights[key].statusCode >= 20) {
+            for(uint i=0; i<Passengers.length; i++) {
+                if(Passengers[i].flightNumber == flight) {   
+                    flightSuretyData.creditInsurees(Passengers[i].passenger, Passengers[i].flightNumber);
+                    delete Passengers[i];
+                }
+            }
+        }
+    }
+    
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus(address airline, string flight, uint256 timestamp) external  {
         uint8 index = getRandomIndex(msg.sender);
 
         // Generate a unique key for storing the request
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
-        oracleResponses[key] = ResponseInfo({
-                                                requester: msg.sender,
-                                                isOpen: true
-                                            });
+        oracleResponses[key] = ResponseInfo({requester: msg.sender, isOpen: true});
 
         emit OracleRequest(index, airline, flight, timestamp);
     } 
