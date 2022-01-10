@@ -8,11 +8,9 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
-
-    address private contractOwner;                                      // Account used to deploy contract
+    address private contractOwner; // Account used to deploy contract
     bool private operational = true; 
 
-                                       // Blocks all state changes throughout the contract if false
     mapping(address => uint256) private authorizedCallers;
 
     struct Airline {
@@ -20,76 +18,48 @@ contract FlightSuretyData {
         uint256 funds;
     }
 
-    mapping(address => Airline) airlines;
-    address[] private registeredAirlines;
-
-    // passenger with multiply flights
     struct Passenger {
-        bool isInsured;     //is insured multiple?
+        bool isInsured;
         bool[] isPaid;
         uint256[] insurance;
         string[] flights;
     }
 
+    mapping(address => Airline) airlines;
+    address[] private registeredAirlines;
+
     mapping(address => Passenger) passengersMapping;
 
     mapping(string => address[]) flightPassengers;
 
-    // the contract holds balance of insurance
     uint256 private balance = 0 ether;
-    // registration fee
     uint256 constant registration = 10 ether;
 
-    // consensus of registered airlines
-    address[] public multiCalls = new address[](0);
-
-///////////////// Possibly reuse 
-    //Flight mapping Amount
     mapping(string => uint256) private flightInsuranceTotalAmount;
 
-    //Passenger address to insurance payment. Stores Insurance payouts for passengers
-    // passenger[i].flight passenger[i].funds
     mapping(address => uint256) private insurancePayment;
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
-
-
-    /**
-    * @dev Constructor
-    *      The deploying account becomes contractOwner
-    */
-    constructor
-                                (
-                                    address _airline
-                                ) 
-                                public 
+    constructor(address _airline) public 
     {
         contractOwner = msg.sender;
-        initialAirline(_airline);
+        airlines[_airline] = Airline(true,0);
+        registeredAirlines.push(_airline);
     }
+
+    
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
-
-    // Modifiers help avoid duplication of code. They are typically used to validate something
-    // before a function is allowed to be executed.
-
-    /**
-    * @dev Modifier that requires the "operational" boolean variable to be "true"
-    *      This is used on all state changing functions to pause the contract in 
-    *      the event there is an issue that needs to be fixed
-    */
     modifier requireIsOperational() 
     {
         require(operational, "Contract is currently not operational");
-        _;  // All modifiers require an "_" which indicates where the function body will be added
+        _; 
     }
 
-    /**
-    * @dev Modifier that requires the "ContractOwner" account to be the function caller
-    */
     modifier requireContractOwner()
     {
         require(msg.sender == contractOwner, "Caller is not contract owner");
@@ -105,58 +75,26 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
-
-    function initialAirline(address _airline) internal requireIsOperational{
-        airlines[_airline] = Airline({isRegistered : true, funds : 0});
-        registeredAirlines.push(_airline);
-    }
-    /**
-    * @dev Get operating status of contract
-    *
-    * @return A bool that is the current operating status
-    */      
-    function isOperational() 
-                            public 
-                            view 
-                            returns(bool) 
+    function isOperational() public view returns(bool) 
     {
         return operational;
     }
 
-
-    /**
-    * @dev Sets contract operations on/off
-    *
-    * When operational mode is disabled, all write transactions except for this one will fail
-    */   
-
-    function setOperatingStatus
-                            (
-                                bool mode
-                            ) 
-                            external
-                            requireContractOwner
-                             
+    function setOperatingStatus(bool mode) external
+    requireContractOwner                  
     {
+        require(mode != operational, "The mode has the same value as operational");
         operational = mode;
     } 
 
-    function authorizeCaller
-                            (
-                                address contractAddress
-                            )
-                            external
-                            requireContractOwner
+    function authorizeCaller(address contractAddress) external
+    requireContractOwner
     {
         authorizedCallers[contractAddress] = 1;
     }
 
-    function deauthorizeCaller
-                            (
-                                address contractAddress
-                            )
-                            external
-                            requireContractOwner
+    function deauthorizeCaller(address contractAddress) external
+    requireContractOwner
     {
         delete authorizedCallers[contractAddress];
     }
@@ -164,51 +102,15 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
-
-    function isAirline
-                            (
-                                address _address
-                            )
-                            external
-                            view
-                            returns(bool)
-    {
-        return airlines[_address].isRegistered;
-    }
-   /**
-    * @dev Add an airline to the registration queue
-    *      Can only be called from FlightSuretyApp contract
-    *
-    */   
-    function registerAirline
-                            ( 
-                                address _address   
-                            )
-                            external
-                            requireIsOperational
+    function registerAirline(address _address) external
+    requireIsOperational
     {  
-        airlines[_address] = Airline ({
-                                        isRegistered: true,
-                                        funds: 0
-
-                                    });
+        airlines[_address] = Airline(true, 0);
         registeredAirlines.push(_address);
     }
 
-
-   /**
-    * @dev Buy insurance for a flight
-    *
-    */   
-    function buy
-                            (   
-                            address _passenger,
-                            uint256 _insurancePrice,
-                            string _flight
-                            )
-                            external
-                            payable
-                            requireIsOperational
+    function buy(address _passenger, uint256 _insurancePrice, string _flight) external payable
+    requireIsOperational
     {
         string[] memory flights = new string[](3);
         bool[] memory paid = new bool[](3);
@@ -240,38 +142,10 @@ contract FlightSuretyData {
 
     }
 
-    /**
-     *  @dev Credits payouts to insurees
-    
-    function creditInsurees
-                                ( 
-                                    address _passenger,
-                                    uint _credit
-                                )
-                                internal
-    {        
-        passengers[_passenger].isPaid = true;
-        passengers[_passenger].insurance = passengers[_passenger].insurance.add(_credit);
-        passengers[_passenger].isInsured = false;
-    }*/
-    
-
-    /**
-     *  @dev Transfers eligible payout funds to insuree
-     *  Each insuree receives the equal part of total amount of airline insurance
-     *
-    */
-    function pay
-                            (
-                                address _account,
-                                uint funds
-                            )
-                            public
-                            payable
-                            requireIsOperational
+    function pay(address _account, uint funds) public payable
+    requireIsOperational
     {
-        _account.send(funds);
-        
+        _account.send(funds);    
     }
 
     function getInsurancePayment(address _account) external view requireIsOperational returns (uint funds){
@@ -314,26 +188,9 @@ contract FlightSuretyData {
         return airlines[_airline].isRegistered;
     }
 
-
-    function getMultiCallsLength() public view returns(uint){
-        return multiCalls.length;
-    }
-
-    function getMultiCallsItem(uint _i) public view returns(address){
-        return multiCalls[_i];
-    }
-    function setMultiCallsItem(address _address) public {
-        multiCalls.push(_address);
-    }
-
-    function clearMultiCalls() public{
-        multiCalls = new address[](0);
-    }
-
-    function getRegisteredAirlines() requireIsOperational public view returns(address[]){
+    function getRegisteredAirlines() public view  requireIsOperational returns(address[]){
         return registeredAirlines;
     }
-
 
     function getFlightIndex(address _passenger, string memory _flight) public view returns(uint index)
     {
@@ -358,28 +215,14 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */   
-    function fund
-                            (  
-                                address _airline,
-                                uint256 _fund  
-                            )
-                            public
-                            payable
-                            requireIsOperational
+    function fund(address _airline, uint256 _fund) public payable
+    requireIsOperational
     {
         airlines[_airline].funds = airlines[_airline].funds.add(_fund);
         balance = balance.add(_fund);
     }
 
-    function getFlightKey
-                        (
-                            address airline,
-                            string memory flight,
-                            uint256 timestamp
-                        )
-                        pure
-                        internal
-                        returns(bytes32) 
+    function getFlightKey(address airline, string memory flight, uint256 timestamp) pure internal returns(bytes32) 
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
@@ -388,43 +231,8 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() 
-                            external 
-                            payable 
+    function() external payable 
     {
-        balance = balance.add(msg.value);    }
-
-        /**
-    * @dev Sets contract operations on/off
-    *
-    * When operational mode is disabled, all write transactions except for this one will fail
-    */    
-    /*function setOperatingStatus
-                            (
-                                bool mode
-                            ) 
-                            external
-                            requireContractOwner
-                             
-    {
-        require(mode != operational, "New mode must be different from existing mode");
-        require(authorizedCallers[msg.sender] == 1, "Caller is not an admin"); //check if authorized caller/registered airline
-
-        bool isDuplicate = false;
-        for(uint c=0; c<noOfAuthCallers; c++) {
-            if (authorizedCallers[msg.sender] == 1) {
-                isDuplicate = true;
-                break;
-            }
-        }
-        require(!isDuplicate, "Caller has already called this function.");
-
-        authorizedCallers[msg.sender] == 1;
-        if (noOfAuthCallers >= M) {
-            operational = mode;           
-        }
-    }*/
-
-
+        balance = balance.add(msg.value);    
+    }
 }
-

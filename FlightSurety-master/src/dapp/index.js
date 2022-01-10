@@ -1,4 +1,3 @@
-
 import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
@@ -57,14 +56,6 @@ import './flightsurety.css';
             });
             DOM.elid('airline-address').value = "";
             displayListAirline(airline, DOM.elid("airlines"));  
-        });
-
-        DOM.elid('fund-airline').addEventListener('click', () => {
-            let airline = DOM.elid('airlines').value;
-            let fund = DOM.elid('airline-fund').value;
-            contract.sendFundToAirline(airline, fund, (error, result) => {
-                alert("Airline was successfully funded.");
-            }); 
         });
 
         DOM.elid('flights').addEventListener('change', () => {

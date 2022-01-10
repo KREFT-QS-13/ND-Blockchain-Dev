@@ -1,6 +1,5 @@
-
 var Test = require('../config/testConfig.js');
-//var BigNumber = require('bignumber.js');
+var BigNumber = require('bignumber.js');
 
 contract('Oracles', async (accounts) => {
 
@@ -8,7 +7,7 @@ contract('Oracles', async (accounts) => {
   var config;
   before('setup contract', async () => {
     config = await Test.Config(accounts);
-
+    
     // Watch contract events
     const STATUS_CODE_UNKNOWN = 0;
     const STATUS_CODE_ON_TIME = 10;
@@ -16,16 +15,13 @@ contract('Oracles', async (accounts) => {
     const STATUS_CODE_LATE_WEATHER = 30;
     const STATUS_CODE_LATE_TECHNICAL = 40;
     const STATUS_CODE_LATE_OTHER = 50;
-
   });
 
 
   it('can register oracles', async () => {
     
-    // ARRANGE
     let fee = await config.flightSuretyApp.REGISTRATION_FEE.call();
 
-    // ACT
     for(let a=1; a<TEST_ORACLES_COUNT; a++) {      
       await config.flightSuretyApp.registerOracle.sendTransaction({ from: accounts[a], value: fee });
       let result = await config.flightSuretyApp.getMyIndexes.call({from: accounts[a]});
@@ -35,8 +31,7 @@ contract('Oracles', async (accounts) => {
 
   it('can request flight status', async () => {
     
-    // ARRANGE
-    let flight = 'ND1309'; // Course number
+    let flight = 'ND1309';
     let timestamp = Math.floor(Date.now() / 1000);
 
     // Submit a request for oracles to get status information for a flight

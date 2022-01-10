@@ -1,4 +1,3 @@
-
 var Test = require('../config/testConfig.js');
 var BigNumber = require('bignumber.js');
 
@@ -15,24 +14,11 @@ contract('Flight Surety Tests', async (accounts) => {
   /****************************************************************************************/
 
   it(`(multiparty) has correct initial isOperational() value`, async function () {
-
     // Get operating status
     let status = await config.flightSuretyData.isOperational.call();
     assert.equal(status, true, "Incorrect initial operating status value");
-
   });
-  /*
-  it(`(passenger) can withdraw ones insurance`, async function () {
-
-    let passenger = accounts[2];
-    await config.flightSuretyApp.buy(1 , "Flight no1", { from: passenger });
-    await config.flightSuretyApp.pay({ from: passenger });
-    let transffunds = await config.flightSuretyApp.getPassengersInsurance({ from: passenger});
-    console.log(transffunds);
-    assert.equal(transffunds, 1, "Funds are not transfered.")
-            
-  });*/
-
+ 
   it(`(multiparty) can block access to setOperatingStatus() for non-Contract Owner account`, async function () {
 
       // Ensure that access is denied for non-Contract Owner account
@@ -144,11 +130,9 @@ contract('Flight Surety Tests', async (accounts) => {
 
         // ASSERT
         assert.equal(result, true, "Airline was not registered.");
-
     });
 
-
-      it('(airline) airline can be registered, but does not participate in contract until it submits funding of 10 ether', async () => {
+    it('(airline) airline can be registered, but does not participate in contract until it submits funding of 10 ether', async () => {
 
         // ARRANGE
         let newAirline = accounts[6];
@@ -173,8 +157,5 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.equal(reverted, true, "New registered airline can participate without funds.");
 
         assert.equal(result, true, "Airline was registered but it should not.");
-        //assert.equal(result2, true, "Airline was not registered but it should.");
-
     });
-
 });
