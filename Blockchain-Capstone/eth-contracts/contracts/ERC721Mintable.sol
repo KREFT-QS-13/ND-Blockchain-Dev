@@ -25,15 +25,15 @@ contract Ownable {
         _owner = msg.sender;
     }
 
-    function getOwnerAddress(address _address) public view virtual returns(address) {
-        return _address;
+    function getOwnerAddress() public view  returns  (address) {
+        return _owner;
     }
 
-    function transferOwnership(address newOwner) public virtual onlyOwner isOwnerReal {
+    function transferOwnership(address newOwner) public onlyOwner(msg.sender) isOwnerReal(newOwner) {
         _transferOwnership(newOwner);
     }
 
-    function _transferOwnership(address newOwner) internal virtual {
+    function _transferOwnership(address newOwner) internal  {
         address oldOwner = _owner;
         _owner = newOwner;
 
@@ -60,7 +60,7 @@ contract Pausable is Ownable {
     }
 
     modifier paused() {
-        require(_pasued == false, "The contract in not paused");
+        require(_paused == false, "The contract in not paused");
         _;
     }
     
@@ -68,7 +68,7 @@ contract Pausable is Ownable {
         _paused = false;
     }
 
-    function setPause(bool value) public onlyOwner {
+    function setPause(bool value) public onlyOwner(msg.sender) {
         require(value != _paused, "The new value of paused has to be diffrent.");
         _paused = value;
         if(_paused == true){
@@ -154,22 +154,22 @@ contract ERC721 is Pausable, ERC165 {
     }
 
     function balanceOf(address owner) public view returns (uint256) {
-        return _ownedTokenCount[owner].current();
+        return _ownedTokensCount[owner].current();
     }
 
     function ownerOf(uint256 tokenId) public view returns (address) {
-       return _tokenOwner(tokenId);
+       return _tokenOwner[tokenId];
     }
 
 //    @dev Approves another address to transfer the given token ID
     function approve(address to, uint256 tokenId) public {
         address owner = Ownable.getOwnerAddress();
-        require(_tokenOwner(tokenId)!=to, "You already own this token.");
-        require(msg.sender==owner || isApprovedForAll(owner, msg.sender), "You neeed approval.");
+        require(_tokenOwner[tokenId] != to, "You already own this token.");
+        require(msg.sender == owner || isApprovedForAll(owner, msg.sender), "You neeed approval.");
    
         _tokenApprovals[tokenId] = to;
     
-        emit Approval(msg.sender, to, tokenID)
+        emit Approval(msg.sender, to, tokenId);
     }
 
     function getApproved(uint256 tokenId) public view returns (address) {
@@ -462,11 +462,11 @@ contract ERC721Enumerable is ERC165, ERC721 {
 }
 
 contract ERC721Metadata is ERC721Enumerable, usingOraclize {
-    
-    // TODO: Create private vars for token _name, _symbol, and _baseTokenURI (string)
+    string private _name;
+    string private _symbol;
+    string private _baseTokenURI;
 
-    // TODO: create private mapping of tokenId's to token uri's called '_tokenURIs'
-
+    mapping(uint256=>string) private _tokenURIs;
     bytes4 private constant _INTERFACE_ID_ERC721_METADATA = 0x5b5e139f;
     /*
      * 0x5b5e139f ===
