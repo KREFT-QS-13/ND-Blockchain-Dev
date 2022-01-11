@@ -173,7 +173,8 @@ contract ERC721 is Pausable, ERC165 {
     }
 
     function getApproved(uint256 tokenId) public view returns (address) {
-        // TODO return token approval if it exists
+        require(_tokenApprovals[tokenId] != address(0), "This token is not approved.");
+        return _tokenApprovals[tokenId];
     }
 
     /**
@@ -238,27 +239,29 @@ contract ERC721 is Pausable, ERC165 {
     // @dev Internal function to mint a new token
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _mint(address to, uint256 tokenId) internal {
+        require(_exists(tokenId), "The token already exists.");
+        require(to != address(0), "The given address is invalid.");
 
-        // TODO revert if given tokenId already exists or given address is invalid
-  
-        // TODO mint tokenId to given address & increase token count of owner
+        _tokenOwner[tokenId] = to;
+        _ownedTokensCount[to].increment();
 
-        // TODO emit Transfer event
+        emit Transfer(address(0), to, tokenId);
     }
 
     // @dev Internal function to transfer ownership of a given token ID to another address.
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _transferFrom(address from, address to, uint256 tokenId) internal {
+        require(from == _tokenOwner[tokenId], "You are not the owner of the given token");
+        require(to != address(0), "The address, that token is being transfered is invalid");
 
-        // TODO: require from address is the owner of the given token
+        delete _tokenApprovals[tokenId];
 
-        // TODO: require token is being transfered to valid address
+        _ownedTokensCount[from].decrement();
+        _ownedTokensCount[to].increment();
         
-        // TODO: clear approval
+        _tokenOwner[tokenId] = to;
 
-        // TODO: update token counts & transfer ownership of the token ID 
-
-        // TODO: emit correct event
+        emit Transfer(from, to, tokenId);
     }
 
     /**
@@ -467,6 +470,7 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
     string private _baseTokenURI;
 
     mapping(uint256=>string) private _tokenURIs;
+
     bytes4 private constant _INTERFACE_ID_ERC721_METADATA = 0x5b5e139f;
     /*
      * 0x5b5e139f ===
@@ -475,28 +479,28 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
      *     bytes4(keccak256('tokenURI(uint256)'))
      */
 
-
     constructor (string memory name, string memory symbol, string memory baseTokenURI) public {
-        // TODO: set instance var values
-
+        _name = name;
+        _symbol = symbol;
+        _baseTokenURI = baseTokenURI;
         _registerInterface(_INTERFACE_ID_ERC721_METADATA);
     }
 
-    // TODO: create external getter functions for name, symbol, and baseTokenURI
+    function getMetadata() external returns(string memory, string memory, string memory) {
+        return (_name, _symbol, _baseTokenURI);
+    } 
 
     function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_exists(tokenId));
         return _tokenURIs[tokenId];
     }
 
+    function SetTokenURI(uint256 tokenId) internal {
+        require(_exists(tokenId), "The token already exists.");
+        string memory tokenURI = strConcat(_baseTokenURI, uint2str(tokenId));
 
-    // TODO: Create an internal function to set the tokenURI of a specified tokenId
-    // It should be the _baseTokenURI + the tokenId in string form
-    // TIP #1: use strConcat() from the imported oraclizeAPI lib to set the complete token URI
-    // TIP #2: you can also use uint2str() to convert a uint to a string
-        // see https://github.com/oraclize/ethereum-api/blob/master/oraclizeAPI_0.5.sol for strConcat()
-    // require the token exists before setting
-
+        _tokenURIs[tokenId] = tokenURI;
+    }
 }
 
 //  TODO's: Create CustomERC721Token contract that inherits from the ERC721Metadata contract. You can name this contract as you please
@@ -508,5 +512,6 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
 //      -returns a true boolean upon completion of the function
 //      -calls the superclass mint and setTokenURI functions
 
+contract AstroHaousing is ERC721Metadata {
 
-
+}
