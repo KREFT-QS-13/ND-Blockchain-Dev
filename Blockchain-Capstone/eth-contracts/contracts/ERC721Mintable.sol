@@ -499,7 +499,7 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
 contract AstroHousing is ERC721Metadata("Astro Housing Token", "AHT", "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/") {
     function mint(address to, uint256 tokenId) public onlyOwner(msg.sender) returns(bool) {
         super._mint(to, tokenId);
-        super.setTokenURI(tokenId);
+        setTokenURI(tokenId);
         return true;
     }
 }

@@ -1,13 +1,12 @@
 pragma solidity >=0.4.21 <0.6.0;
+pragma experimental ABIEncoderV2;
 
-import "./verifier.sol";
+import "./Verifier.sol";
 import "./ERC721Mintable.sol";
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
 contract SolnSquareVerifier is AstroHousing {
-    using SafeMath for uint256;
-
-    verifier Verifier;
+    Verifier private VerifierAcc;
 
     struct Solution {
         uint256 index;
@@ -15,52 +14,36 @@ contract SolnSquareVerifier is AstroHousing {
     }
 
     uint256 solutionIndex = 0;
-    mapping(bytes32=>Solution) solutionSubmitted;
-    // Solution[] solution = new Solution[](0);
+    mapping(bytes32=>Solution) private solutionSubmitted;
+    Solution[] private solutions;
 
-    event solutionAdded(bytes32 solutionKey, address sender);
-
-    function addSolution(uint256[2] memory a, uint256[2][2] memory b, uint256[2] memory c, uint256[2] memory inputs) public {
-        bytes32 key = keccak256(abi.encodePacked(a, b, c, inputs));
-        solutionSubmitted[key] = Solution(solutionIndex, msg.sender);
-        solutionIndex.add(1);
-        emit solutionAdded(key, msg.sender);
+    event solutionAdded(uint256 solutionKey, address sender);
+    
+    function getSolutionsLength() public view returns(uint256) {
+        return solutions.length;
     }
 
-// TODO Create a function to mint new NFT only after the solution has been verified
-//  - make sure the solution is unique (has not been used before)
-//  - make sure you handle metadata as well as tokenSuplly
-    function mnitNewNFT(address to, address tokenId, uint256[2] memory a, uint256[2][2] memory b, uint256[2] memory c, uint256[2] memory inputs) public {
-        require(Verifier.verifyTx(a, b, c, inputs), true, "Solution is incorrect.");
+    using SafeMath for uint256;
+    function addSolution(address Solver) public returns(uint256) {
+        Solution memory newSolution = Solution({index: solutionIndex, account: Solver});
+        solutions.push(newSolution);
 
-        addSolution(a, b, c, inputs);
+        emit solutionAdded(newSolution.index, newSolution.account);
+        
+        uint256 currentIndex = solutionIndex;
+        solutionIndex.add(1);
+
+        return currentIndex;
+    }
+
+    function mintNewNFT(address to, uint256 tokenId, Verifier.Proof memory proof, uint[2] memory inputs) public {
+        bytes32 key = keccak256(abi.encodePacked(proof.a.X, proof.a.Y, proof.b.X, proof.b.Y, proof.c.X, proof.c.Y, inputs));
+
+        require((solutionSubmitted[key].index == 0) && (solutionSubmitted[key].account == address(0)), "Solution already used.");
+        require(VerifierAcc.verifyTx(proof, inputs), "The proof is incorrect.");
+
+        uint256 index = addSolution(to);
+        solutionSubmitted[key] = solutions[index];
         super.mint(to, tokenId);
     }
 }
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
