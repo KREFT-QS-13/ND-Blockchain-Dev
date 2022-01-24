@@ -23,6 +23,7 @@ contract Ownable {
 
     constructor() internal {
         _owner = msg.sender;
+        emit ownershipTransfered(address(0), msg.sender);
     }
 
     function getOwnerAddress() public view  returns  (address) {
@@ -34,6 +35,7 @@ contract Ownable {
     }
 
     function _transferOwnership(address newOwner) internal  {
+        require(newOwner != address(0), "Invalid address of new owner.");
         address oldOwner = _owner;
         _owner = newOwner;
 
@@ -48,12 +50,12 @@ contract Pausable is Ownable {
     event Unpaused(address caller);
 
     modifier whenNotPaused() {
-        require(_paused == true, "The contract is paused");
+        require(_paused == false, "The contract is paused.");
         _;
     }
 
     modifier paused() {
-        require(_paused == false, "The contract in not paused");
+        require(_paused == true, "The contract in not paused.");
         _;
     }
     
@@ -147,26 +149,27 @@ contract ERC721 is Pausable, ERC165 {
     }
 
     function balanceOf(address owner) public view returns (uint256) {
+        require(owner != address(0), "The address is invalid.");
         return _ownedTokensCount[owner].current();
     }
 
     function ownerOf(uint256 tokenId) public view returns (address) {
-       return _tokenOwner[tokenId];
+        return _tokenOwner[tokenId];
     }
 
 //    @dev Approves another address to transfer the given token ID
     function approve(address to, uint256 tokenId) public {
-        address owner = Ownable.getOwnerAddress();
-        require(_tokenOwner[tokenId] != to, "You already own this token.");
+        address owner = ownerOf(tokenId);
+        require(owner != to, "You already own this token.");
         require(msg.sender == owner || isApprovedForAll(owner, msg.sender), "You neeed approval.");
    
         _tokenApprovals[tokenId] = to;
     
-        emit Approval(msg.sender, to, tokenId);
+        emit Approval(owner, to, tokenId);
     }
 
     function getApproved(uint256 tokenId) public view returns (address) {
-        require(_tokenApprovals[tokenId] != address(0), "This token is not approved.");
+        require(_exists(tokenId), "This token is not approved.");
         return _tokenApprovals[tokenId];
     }
 
@@ -232,8 +235,8 @@ contract ERC721 is Pausable, ERC165 {
     // @dev Internal function to mint a new token
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _mint(address to, uint256 tokenId) internal {
-        require(_exists(tokenId), "The token already exists.");
         require(to != address(0), "The given address is invalid.");
+        require(!_exists(tokenId), "The token already exists.");
 
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
@@ -247,7 +250,7 @@ contract ERC721 is Pausable, ERC165 {
         require(from == _tokenOwner[tokenId], "You are not the owner of the given token");
         require(to != address(0), "The address, that token is being transfered is invalid");
 
-        delete _tokenApprovals[tokenId];
+        _clearApproval(tokenId);
 
         _ownedTokensCount[from].decrement();
         _ownedTokensCount[to].increment();
@@ -483,22 +486,24 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
         return (_name, _symbol, _baseTokenURI);
     } 
 
+    event ReturnedTokenId(uint256 tokenId);
     function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_exists(tokenId));
+        // emit ReturnedTokenId(tokenId);
         return _tokenURIs[tokenId];
     }
 
     function setTokenURI(uint256 tokenId) internal {
         require(_exists(tokenId), "The token already exists.");
-        string memory tokenURI = strConcat(_baseTokenURI, uint2str(tokenId));
+        // string memory tokenURI = strConcat(_baseTokenURI, uint2str(tokenId));
 
-        _tokenURIs[tokenId] = tokenURI;
+        _tokenURIs[tokenId] = strConcat(_baseTokenURI, uint2str(tokenId));
     }
 }
 
 contract AstroHousing is ERC721Metadata("Astro Housing Token", "AHT", "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/") {
     function mint(address to, uint256 tokenId) public onlyOwner(msg.sender) returns(bool) {
-        super._mint(to, tokenId);
+        _mint(to, tokenId);
         setTokenURI(tokenId);
         return true;
     }
