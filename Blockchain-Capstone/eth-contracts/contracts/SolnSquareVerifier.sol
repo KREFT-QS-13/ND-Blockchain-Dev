@@ -1,12 +1,12 @@
 pragma solidity >=0.4.21 <0.6.0;
-pragma experimental ABIEncoderV2;
+// pragma experimental ABIEncoderV2;
 
 import "./Verifier.sol";
 import "./ERC721Mintable.sol";
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
 contract SolnSquareVerifier is AstroHousing {
-    Verifier private VerifierAcc;
+    Verifier VerifierAcc;
 
     struct Solution {
         uint256 index;
@@ -36,11 +36,23 @@ contract SolnSquareVerifier is AstroHousing {
         return currentIndex;
     }
 
-    function mintNewNFT(address to, uint256 tokenId, Verifier.Proof memory proof, uint[2] memory inputs) public {
-        bytes32 key = keccak256(abi.encodePacked(proof.a.X, proof.a.Y, proof.b.X, proof.b.Y, proof.c.X, proof.c.Y, inputs));
+    function mintNewNFT(
+        address to, 
+        uint256 tokenId, 
+        uint[2] memory a,
+        uint[2] memory a_p,
+        uint[2][2] memory b,
+        uint[2] memory b_p,
+        uint[2] memory c,
+        uint[2] memory c_p,
+        uint[2] memory h,
+        uint[2] memory k,
+        uint[2] memory inputs 
+    ) public {
+        bytes32 key = keccak256(abi.encodePacked(a, a_p, b, b_p, c, c_p, h, k, inputs));
 
         require((solutionSubmitted[key].index == 0) && (solutionSubmitted[key].account == address(0)), "Solution already used.");
-        require(VerifierAcc.verifyTx(proof, inputs), "The proof is incorrect.");
+        // require(VerifierAcc.verifyTx(a, a_p, b, b_p, c, c_p, h, k, inputs), "The proof is incorrect.");
 
         uint256 index = addSolution(to);
         solutionSubmitted[key] = solutions[index];

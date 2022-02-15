@@ -26,7 +26,7 @@ contract Ownable {
         emit ownershipTransfered(address(0), msg.sender);
     }
 
-    function getOwnerAddress() public view  returns  (address) {
+    function getOwnerAddress() public view  returns(address) {
         return _owner;
     }
 
@@ -160,8 +160,10 @@ contract ERC721 is Pausable, ERC165 {
 //    @dev Approves another address to transfer the given token ID
     function approve(address to, uint256 tokenId) public {
         address owner = ownerOf(tokenId);
+        address contractOwner = getOwner(); 
+
         require(owner != to, "You already own this token.");
-        require(msg.sender == owner || isApprovedForAll(owner, msg.sender), "You neeed approval.");
+        require(msg.sender == contractOwner || isApprovedForAll(to, msg.sender), "You neeed approval.");
    
         _tokenApprovals[tokenId] = to;
     
