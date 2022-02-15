@@ -198,7 +198,7 @@ contract ERC721 is Pausable, ERC165 {
     }
 
     function transferFrom(address from, address to, uint256 tokenId) public {
-        require(_isApprovedOrOwner(msg.sender, tokenId));
+        require(_isApprovedOrOwner(msg.sender, tokenId), "You need to be aproved.");
 
         _transferFrom(from, to, tokenId);
     }
@@ -238,7 +238,7 @@ contract ERC721 is Pausable, ERC165 {
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _mint(address to, uint256 tokenId) internal {
         require(to != address(0), "The given address is invalid.");
-        require(!_exists(tokenId), "The token already exists.");
+        require(_exists(tokenId), "The token already exists.");
 
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
@@ -249,13 +249,13 @@ contract ERC721 is Pausable, ERC165 {
     // @dev Internal function to transfer ownership of a given token ID to another address.
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _transferFrom(address from, address to, uint256 tokenId) internal {
-        require(from == _tokenOwner[tokenId], "You are not the owner of the given token");
-        require(to != address(0), "The address, that token is being transfered is invalid");
+        require(from == ownerOf(tokenId), "You are not the owner of the given token");
+        require(to != address(0) && !Address.isContract(to), "The address, that token is being transfered is invalid");
 
         _clearApproval(tokenId);
 
-        _ownedTokensCount[from].decrement();
-        _ownedTokensCount[to].increment();
+        _ownedTokensCount[from].decrement(_ownedTokensCount[from]);
+        _ownedTokensCount[to].increment(_ownedTokensCount[to]);
         
         _tokenOwner[tokenId] = to;
 
@@ -502,9 +502,12 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
         _tokenURIs[tokenId] = strConcat(_baseTokenURI, uint2str(tokenId));
     }
 }
+// ("Astro Housing Token", "AHT", "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/")
+contract AstroHousing is ERC721Metadata {
+    string private baseURI = "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
+    constructor (string memory name, string memory symbol) ERC721Metadata(name, symbol, baseURI) public { }
 
-contract AstroHousing is ERC721Metadata("Astro Housing Token", "AHT", "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/") {
-    function mint(address to, uint256 tokenId) public onlyOwner(msg.sender) returns(bool) {
+    function mint(address to, uint256 tokenId) public onlyOwner returns(bool) {
         _mint(to, tokenId);
         setTokenURI(tokenId);
         return true;
