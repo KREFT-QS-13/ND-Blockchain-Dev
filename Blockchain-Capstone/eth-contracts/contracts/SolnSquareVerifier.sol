@@ -8,6 +8,10 @@ import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 contract SolnSquareVerifier is AstroHousing {
     Verifier VerifierAcc;
 
+    constructor(address verifierAddress, string memory name, string memory symbol) public AstroHousing(name, symbol) {
+        verifierContract = Verifier(verifierAddress);
+    }
+
     struct Solution {
         uint256 index;
         address account;
@@ -15,7 +19,6 @@ contract SolnSquareVerifier is AstroHousing {
 
     uint256 solutionIndex = 0;
     mapping(bytes32=>Solution) private solutionSubmitted;
-    Solution[] private solutions;
 
     event solutionAdded(uint256 solutionKey, address sender);
     
@@ -24,38 +27,32 @@ contract SolnSquareVerifier is AstroHousing {
     }
 
     using SafeMath for uint256;
-    function addSolution(address Solver) public returns(uint256) {
-        Solution memory newSolution = Solution({index: solutionIndex, account: Solver});
-        solutions.push(newSolution);
-
-        emit solutionAdded(newSolution.index, newSolution.account);
-        
-        uint256 currentIndex = solutionIndex;
+    function addSolution(
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
+        uint[2] memory inputs
+    ) public returns(uint256) {
+        bytes32 key = keccak256(abi.encodePacked(a, b, c, input));
+        require(solutionSubmitted[key].index == 0, "Solution already exists");
+        solutionSubmitted[key] = Solution({index: solutionIndex, account:msg.sender});
+    
         solutionIndex.add(1);
 
-        return currentIndex;
+        emit solutionAdded(key, msg.sender);
     }
 
     function mintNewNFT(
         address to, 
         uint256 tokenId, 
         uint[2] memory a,
-        uint[2] memory a_p,
         uint[2][2] memory b,
-        uint[2] memory b_p,
         uint[2] memory c,
-        uint[2] memory c_p,
-        uint[2] memory h,
-        uint[2] memory k,
         uint[2] memory inputs 
     ) public {
-        bytes32 key = keccak256(abi.encodePacked(a, a_p, b, b_p, c, c_p, h, k, inputs));
+        require(VerifierAcc.verifyTx(a, b, c, input), "Solution is incorrect");
 
-        require((solutionSubmitted[key].index == 0) && (solutionSubmitted[key].account == address(0)), "Solution already used.");
-        // require(VerifierAcc.verifyTx(a, a_p, b, b_p, c, c_p, h, k, inputs), "The proof is incorrect.");
-
-        uint256 index = addSolution(to);
-        solutionSubmitted[key] = solutions[index];
+        addSolution(a, b, c, inputs);
         super.mint(to, tokenId);
     }
 }
