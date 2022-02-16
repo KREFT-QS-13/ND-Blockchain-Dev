@@ -10,7 +10,7 @@ import "./Oraclize.sol";
 contract Ownable {
     address private _owner;
     
-    event ownershipTransfered(address oldOwner, address newOwner);
+    event OwnershipTransfered(address oldOwner, address newOwner);
 
     modifier onlyOwner(address _address) {
         require(_owner == _address, "Your account is not the owner.");
@@ -24,7 +24,7 @@ contract Ownable {
 
     constructor() internal {
         _owner = msg.sender;
-        emit ownershipTransfered(address(0), msg.sender);
+        emit OwnershipTransfered(address(0), msg.sender);
     }
 
     function getOwnerAddress() public view  returns(address) {
@@ -40,7 +40,7 @@ contract Ownable {
         address oldOwner = _owner;
         _owner = newOwner;
 
-        emit ownershipTransfered(oldOwner, newOwner);
+        emit OwnershipTransfered(oldOwner, newOwner);
     }
 }
 
@@ -164,11 +164,11 @@ contract ERC721 is Pausable, ERC165 {
         address contractOwner = getOwnerAddress(); 
 
         require(owner != to, "You already own this token.");
-        require(msg.sender == owner || isApprovedForAll(to, msg.sender), "You neeed approval.");
+        //require(msg.sender == owner || isApprovedForAll(to, msg.sender), "You neeed approval.");
    
         _tokenApprovals[tokenId] = to;
     
-        emit Approval(msg.sender, to, tokenId);
+        emit Approval(owner, to, tokenId);
     }
 
     function getApproved(uint256 tokenId) public view returns (address) {
@@ -244,7 +244,7 @@ contract ERC721 is Pausable, ERC165 {
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
 
-        emit Transfer(msg.sender, to, tokenId);
+        emit Transfer(address(0), to, tokenId);
     }
 
     // @dev Internal function to transfer ownership of a given token ID to another address.
