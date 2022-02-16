@@ -1,4 +1,5 @@
-var SolnSquareVerifier = artifacts.require('SolnSquareVerifier');
+const SolnSquareVerifier = artifacts.require('SolnSquareVerifier');
+const Verifier = artifacts.require("Verifier");
 
 const proof39 = require('./proof_3_9.json');
 
@@ -6,39 +7,35 @@ contract('TestSolnSquareVerifier', accounts => {
 
     const account_one = accounts[0];
     const account_two = accounts[1];
-
-    describe('test solution square verifier', function () {
-        beforeEach(async function () { 
-            this.contract = await SolnSquareVerifier.deployed();
+    
+    const proof = proof39.proof;
+    const inputs = proof39.inputs;
+    
+    const NAME = "Test token";
+    const SYMBOL = "TT0";
+    
+    describe("Setup - SolnSquareVerifier", function () {
+        beforeEach(async function () {
+            const VerifierCon = await Verifier.new({from: account_one});
+            this.contract = await SolnSquareVerifier.new(VerifierCon.address, NAME, SYMBOL, {from: account_one});
         });
 
-        it('should add solution', async function () { 
-            await this.contract.addSolution(account_one);
-            let solutionLength = await this.contract.getSolutionsLength.call();
-            assert.equal(solutionLength, 1, "Solution not added.");
+        it("Should test adding a solution:", async function () {
+            let result = false;
+            await this.contract.addSolution(proof.a, proof.b, proof.c, inputs, {from: account_one});
+
+            try {
+                await this.contract.addSolution(proof.a, proof.b, proof.c, inputs, {from: account_one});
+            } catch (error) {
+                result = true;
+            }
+            assert.equal(result, true, "Solution was added correctly.");
         });
 
-        it('should mint a token', async function () { 
-            let account_two_balance = await this.contract.balanceOf(account_two);
-            assert.equal(account_two_balance, 0, "Wrong balance for account_two, should be 0.");
-
-            await this.contract.mintNewNFT(
-                account_two, 
-                0, 
-                proof39.a,
-                proof39.a_p,
-                proof39.b,
-                proof39.b_p,
-                proof39.c,
-                proof39.c_p,
-                proof39.h,
-                proof39.k,
-                proof39.inputs, 
-                {from: account_one}
-            );
-
-            let ownerAddress = await this.contract.ownerOf.call(0, {from: account_one});
-            assert.equal(account_two, ownerAddress, "Token not minted or incorect owener.");
+        it("Should test minting a token:", async function () {
+            await this.contract.mintNewNFT(account_two, 1, proof.a, proof.b, proof.c, inputs, {from: account_one});
+            let owner = await this.contract.ownerOf(1);
+            assert.equal(owner, account_two, "Token can be minted correctly.");
         });
     });
 });

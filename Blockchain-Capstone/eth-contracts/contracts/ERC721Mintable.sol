@@ -1,4 +1,5 @@
-pragma solidity >=0.5.0;
+//SPDX-License-Identifier: MIT
+pragma solidity >=0.5.2;
 
 import 'openzeppelin-solidity/contracts/utils/Address.sol';
 import 'openzeppelin-solidity/contracts/drafts/Counters.sol';
@@ -160,14 +161,14 @@ contract ERC721 is Pausable, ERC165 {
 //    @dev Approves another address to transfer the given token ID
     function approve(address to, uint256 tokenId) public {
         address owner = ownerOf(tokenId);
-        address contractOwner = getOwner(); 
+        address contractOwner = getOwnerAddress(); 
 
         require(owner != to, "You already own this token.");
-        require(msg.sender == contractOwner || isApprovedForAll(to, msg.sender), "You neeed approval.");
+        require(msg.sender == owner || isApprovedForAll(to, msg.sender), "You neeed approval.");
    
         _tokenApprovals[tokenId] = to;
     
-        emit Approval(owner, to, tokenId);
+        emit Approval(msg.sender, to, tokenId);
     }
 
     function getApproved(uint256 tokenId) public view returns (address) {
@@ -243,19 +244,20 @@ contract ERC721 is Pausable, ERC165 {
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
 
-        emit Transfer(address(0), to, tokenId);
+        emit Transfer(msg.sender, to, tokenId);
     }
 
     // @dev Internal function to transfer ownership of a given token ID to another address.
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _transferFrom(address from, address to, uint256 tokenId) internal {
         require(from == ownerOf(tokenId), "You are not the owner of the given token");
-        require(to != address(0) && !Address.isContract(to), "The address, that token is being transfered is invalid");
+        require(to != address(0), "The address, that token is being transfered is invalid");
+        // require(to != address(0) && !Address.isContract(to), "The address, that token is being transfered is invalid");
 
         _clearApproval(tokenId);
 
-        _ownedTokensCount[from].decrement(_ownedTokensCount[from]);
-        _ownedTokensCount[to].increment(_ownedTokensCount[to]);
+        _ownedTokensCount[from].decrement();
+        _ownedTokensCount[to].increment();
         
         _tokenOwner[tokenId] = to;
 
@@ -488,7 +490,7 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
         return (_name, _symbol, _baseTokenURI);
     } 
 
-    event ReturnedTokenId(uint256 tokenId);
+   // event ReturnedTokenId(uint256 tokenId);
     function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_exists(tokenId));
         // emit ReturnedTokenId(tokenId);
@@ -507,8 +509,8 @@ contract AstroHousing is ERC721Metadata {
     string private baseURI = "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/";
     constructor (string memory name, string memory symbol) ERC721Metadata(name, symbol, baseURI) public { }
 
-    function mint(address to, uint256 tokenId) public onlyOwner returns(bool) {
-        _mint(to, tokenId);
+    function mint(address to, uint256 tokenId) public onlyOwner(msg.sender) returns(bool) {
+        super._mint(to, tokenId);
         setTokenURI(tokenId);
         return true;
     }
