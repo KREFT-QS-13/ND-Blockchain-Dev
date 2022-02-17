@@ -239,7 +239,7 @@ contract ERC721 is Pausable, ERC165 {
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _mint(address to, uint256 tokenId) internal {
         require(to != address(0), "The given address is invalid.");
-        require(_exists(tokenId), "The token already exists.");
+        require(!_exists(tokenId), "The token already exists.");
 
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
