@@ -37,9 +37,8 @@ SolnSquareVrifier: 0xF6ee2B7836006734bCDC663B7e280703Bb81BA30
 You can see all transactions in ethersacn:
 * https://rinkeby.etherscan.io/address/0xaC5119EF337f6718f5159C368f18140EAd47a8da
 * https://rinkeby.etherscan.io/address/0xF6ee2B7836006734bCDC663B7e280703Bb81BA30
-* 
 
-ABI of **SolnSquareVrifier** constract is listed below, so you can use [mywallet]{https://www.myetherwallet.com/interface/interact-with-contract} to interact with the contract.
+ABI of **SolnSquareVrifier** constract is listed below, so you can use [mywallet](https://www.myetherwallet.com/interface/interact-with-contract) to interact with the contract.
 
 ## OpenSea testing market
 Finally, the project with 12 minted tokens was put in the OpenSea testing market:
