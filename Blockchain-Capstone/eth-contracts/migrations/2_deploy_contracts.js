@@ -2,10 +2,7 @@
 var Verifier = artifacts.require("./Verifier.sol");
 var SolnSquareVerifier = artifacts.require("./SolnSquareVerifier.sol");
 
-module.exports = function(deployer) {
-  // deployer.deploy(SquareVerifier);
-  // deployer.deploy(SolnSquareVerifier);
-  deployer.deploy(Verifier).then(() => {
-    return deployer.deploy(SolnSquareVerifier,  Verifier.address, "Astro Housing Token", "AHT");
-  });
+module.exports = async(deployer) => {
+  await deployer.deploy(Verifier);
+  await deployer.deploy(SolnSquareVerifier, Verifier.address, "Astro Housing Token", "AHT");
 };
