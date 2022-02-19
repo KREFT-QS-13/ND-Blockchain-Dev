@@ -13,6 +13,12 @@ Versions used is the project:
 * Web3.js: v1.2.1
 * Zokrates: 0.4.10
 
+To install all dependencies for this project run:
+```
+npm install
+```
+inside the project folder.
+
 ## Testing
 In seprate console window run the Ganache cli at the port 7545:
 ```
